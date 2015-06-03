@@ -7,6 +7,9 @@
 # The prime factors of 13195 are 5, 7, 13 and 29.
 # What is the largest prime factor of the number 600851475143 ?
 
+# New Relic must be imported first:
+# https://docs.newrelic.com/docs/agents/python-agent/installation-configuration/python-agent-integratio
+import newrelic.agent
 import math
 from random import randint
 import web
@@ -21,8 +24,9 @@ world_start = 60085147
 world_end = 600851475143
 prime_count = 0
 
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_DAEMON)
 logging.basicConfig(filename='log/problem3.log',level=logging.DEBUG)
+newrelic.agent.initialize('newrelic.ini')
+
 
 urls = (
   '/', 'index'
@@ -53,22 +57,24 @@ def get_largest_prime (world):
 # index class for web.py
 class index:
     def GET(self):
-	# Time performance
+	# Time our performance
 	time_start = calendar.timegm(time.gmtime())
 
+	# Let's do our thing!
 	ceiling = randint(world_start,world_end)
 	result = get_largest_prime(ceiling)
 
-	# Calculate runtime
+	# Calculate our performance
 	time_end = calendar.timegm(time.gmtime())
 	runtime = time_end - time_start
 
-	deliver = "Largest prime below " + str(ceiling) + " is " + str(result) + ", Runtime was ~" + str(runtime) + " seconds, worked through " + str(prime_count) + " primes."
+	deliver = "Largest prime factor of " + str(ceiling) + " is " + str(result) + ", Runtime was ~" + str(runtime) + " seconds, worked through " + str(prime_count) + " primes."
 
 	# Bail and log on errors
 	if result is None:
 		syslog.syslog(syslog.LOG_ERR, deliver)
 		logging.error(str(datetime.datetime.now()) + " " + deliver)
+		raise TypeError('When looking for prime factors, should not be ' + str(result))
 		return "Oops, something went terribly wrong!"
 	# Log and deliver!
 	else:
@@ -76,6 +82,6 @@ class index:
 		logging.info(str(datetime.datetime.now()) + " " + deliver)
 		return deliver
 
-if __name__ == "__main__": 
-    app = web.application(urls, globals())
-    app.run()
+if __name__ == "__main__":
+	app = web.application(urls, globals())
+	app.run()
