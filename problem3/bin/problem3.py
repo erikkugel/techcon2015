@@ -24,6 +24,9 @@ prime_count = 0
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_DAEMON)
 logging.basicConfig(filename='log/problem3.log',level=logging.DEBUG)
 
+urls = (
+  '/', 'index'
+)
 
 # Test a prime number using Trial Division (http://en.wikipedia.org/wiki/Trial_division)
 def is_prime_trial_division (n):
@@ -39,6 +42,7 @@ def is_prime_trial_division (n):
 		test += 1
 	return False
 
+# Find the largest prime below a given number
 def get_largest_prime (world):
 	largest_prime = int(math.sqrt(world))
 	while largest_prime > 2:
@@ -46,28 +50,32 @@ def get_largest_prime (world):
 			return largest_prime
 		largest_prime -= 1
 
-urls = (
-  '/', 'index'
-)
-
+# index class for web.py
 class index:
     def GET(self):
+	# Time performance
 	time_start = calendar.timegm(time.gmtime())
 
 	ceiling = randint(world_start,world_end)
 	result = get_largest_prime(ceiling)
 
+	# Calculate runtime
 	time_end = calendar.timegm(time.gmtime())
 	runtime = time_end - time_start
 
 	deliver = "Largest prime below " + str(ceiling) + " is " + str(result) + ", Runtime was ~" + str(runtime) + " seconds, worked through " + str(prime_count) + " primes."
 
-	syslog.syslog(deliver)
-	logging.info(str(datetime.datetime.now()) + " " + deliver)
-
-	return deliver
-
+	# Bail and log on errors
+	if result is None:
+		syslog.syslog(syslog.LOG_ERR, deliver)
+		logging.error(str(datetime.datetime.now()) + " " + deliver)
+		return "Oops, something went terribly wrong!"
+	# Log and deliver!
+	else:
+		syslog.syslog(deliver)
+		logging.info(str(datetime.datetime.now()) + " " + deliver)
+		return deliver
 
 if __name__ == "__main__": 
     app = web.application(urls, globals())
-    app.run() 
+    app.run()
