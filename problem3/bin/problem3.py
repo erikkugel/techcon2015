@@ -74,7 +74,7 @@ class index:
 	if result is None:
 		syslog.syslog(syslog.LOG_ERR, deliver)
 		logging.error(str(datetime.datetime.now()) + " " + deliver)
-		raise TypeError('When looking for prime factors, should not be ' + str(result))
+		raise TypeError('When looking for prime factors, result should not be ' + str(result))
 		return "Oops, something went terribly wrong!"
 	# Log and deliver!
 	else:
